@@ -1,0 +1,26 @@
+{
+  "selected_model": "rf_d4",
+  "n_features": 119,
+  "test_seasons": "2023-2025",
+  "test_model": {
+    "games": 854,
+    "logloss": 0.6304695199213356,
+    "brier": 0.22012060891904572,
+    "auc": 0.6951900977487331,
+    "accuracy": 0.6533957845433255
+  },
+  "test_baseline_elo_only": {
+    "games": 854,
+    "logloss": 0.6349867402947809,
+    "brier": 0.22204912682593786,
+    "auc": 0.6905048043640793,
+    "accuracy": 0.639344262295082
+  },
+  "test_baseline_home_rate": {
+    "games": 854,
+    "logloss": 0.6887553695401188,
+    "brier": 0.24780482528392028,
+    "auc": 0.5,
+    "accuracy": 0.5491803278688525
+  }
+}

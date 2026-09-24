@@ -1,0 +1,9 @@
+pandas>=2.2
+numpy>=1.26
+scikit-learn>=1.5
+joblib>=1.4
+matplotlib>=3.8
+python-dotenv>=1.0
+streamlit>=1.35
+# optional: adds XGBoost to the candidate models in train.py
+xgboost>=2.0
