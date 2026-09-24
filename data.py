@@ -1,11 +1,3 @@
-"""Data access layer. Replaces db.py: reads games from the NFL team-stats CSV
-(and an optional CSV of upcoming games) instead of Postgres.
-
-Output schema of load_games() — one row per game:
-    game_id, season, week, week_label, season_type, kickoff_ts, neutral,
-    home_team, away_team, home_score, away_score, home_win, completed,
-    plus every box-score stat as <stat>_home / <stat>_away
-"""
 import os
 
 import numpy as np
