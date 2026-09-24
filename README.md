@@ -1,5 +1,4 @@
-# NFL Game Prediction Project (CSV edition)
-
+# NFL Game Prediction Project
 Predicts NFL game winners from team box-score history (2002–2025). This version runs entirely from `data/nfl_team_stats_2002-2025.csv`
 
 ## Quick start
