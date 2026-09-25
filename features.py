@@ -237,8 +237,9 @@ def build_features(season_start=None, season_end=None, include_future=False, upc
 def main():
     Path(PROCESSED_DATA_PATH).mkdir(parents=True, exist_ok=True)
     tg, matrix = build_features(TRAIN_SEASONS_START - 1, TEST_SEASONS_END, include_future=False)
-    tg.to_csv(os.path.join(PROCESSED_DATA_PATH, "features_team_games.csv"), index=False)
-    matrix.to_csv(os.path.join(PROCESSED_DATA_PATH, "features_games.csv"), index=False)
+    # Parquet: columnar + compressed, ~10x smaller than CSV and keeps dtypes intact
+    tg.to_parquet(os.path.join(PROCESSED_DATA_PATH, "features_team_games.parquet"), index=False)
+    matrix.to_parquet(os.path.join(PROCESSED_DATA_PATH, "features_games.parquet"), index=False)
     logger.info(f"Wrote {len(tg):,} team-game rows and {len(matrix):,} game rows "
                 f"({len(model_feature_columns(matrix))} model features) → {PROCESSED_DATA_PATH}")
 

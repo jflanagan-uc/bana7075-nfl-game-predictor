@@ -51,3 +51,9 @@ ROLL_WINDOWS = (3, 8)
 EWM_HALFLIFE = 5
 
 SEED = int(os.getenv("SEED", "42"))
+
+# ---- Experiment tracking + model registry (MLflow) ----
+# Local SQLite store by default; point at a shared server with MLFLOW_TRACKING_URI=http://host:5000
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "sqlite:///" + os.path.join(BASE_DIR, "mlflow.db"))
+MLFLOW_EXPERIMENT   = os.getenv("MLFLOW_EXPERIMENT", "nfl-game-predictor")
+REGISTERED_MODEL    = os.getenv("REGISTERED_MODEL", "nfl-game-winner")

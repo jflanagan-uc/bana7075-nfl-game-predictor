@@ -5,5 +5,11 @@ joblib>=1.4
 matplotlib>=3.8
 python-dotenv>=1.0
 streamlit>=1.35
+pyarrow>=15.0          # parquet storage for processed features
+mlflow>=3.0            # experiment tracking + model registry
+dvc>=3.0               # data + pipeline versioning
 # optional: adds XGBoost to the candidate models in train.py
 xgboost>=2.0
+# optional: only needed to re-download team logos with get_logos.py
+# nfl_data_py
+# requests
