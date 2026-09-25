@@ -1,0 +1,63 @@
+# DVC pipeline: `dvc repro` re-runs only the stages whose inputs changed.
+# `dvc dag` prints the pipeline graph.
+stages:
+  validate:
+    cmd: python validate.py
+    deps:
+      - validate.py
+      - data.py
+      - data/nfl_team_stats_2002-2025.csv
+      - data/upcoming_games.csv
+    outs:
+      - processed/validation_report.json:
+          cache: false
+
+  features:
+    cmd: python features.py
+    deps:
+      - features.py
+      - data.py
+      - config.py
+      - data/nfl_team_stats_2002-2025.csv
+      - processed/validation_report.json
+    outs:
+      - processed/features_games.parquet
+      - processed/features_team_games.parquet
+
+  train:
+    cmd: python train.py
+    deps:
+      - train.py
+      - features.py
+      - config.py
+      - processed/features_games.parquet
+    outs:
+      - models/best_model.joblib
+      - models/best_model_features.txt:
+          cache: false
+      - models/model_selection_valid.csv:
+          cache: false
+      - models/feature_importance.png:
+          cache: false
+    metrics:
+      - models/metrics.json:
+          cache: false
+
+  backtest:
+    cmd: python backtest.py
+    deps:
+      - backtest.py
+      - models/best_model.joblib
+    outs:
+      - models/backtest_by_season.csv:
+          cache: false
+
+  predict:
+    cmd: python predict.py
+    deps:
+      - predict.py
+      - models/best_model.joblib
+      - data/upcoming_games.csv
+    outs:
+      - models/predictions_upcoming.csv:
+          cache: false
