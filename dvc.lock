@@ -1,0 +1,134 @@
+schema: '2.0'
+stages:
+  validate:
+    cmd: python validate.py
+    deps:
+    - path: data.py
+      hash: md5
+      md5: 5ccf2382eca61bea27dcde89d8cf6a0d
+      size: 4891
+    - path: data/nfl_team_stats_2002-2025.csv
+      hash: md5
+      md5: 798902cd82a768d36e00baa9971c4856
+      size: 1280152
+    - path: data/upcoming_games.csv
+      hash: md5
+      md5: 31a590761d05791e45fead3efbf4ed64
+      size: 13336
+    - path: validate.py
+      hash: md5
+      md5: 3e6059e1a76745497f3cda7fcc5047f6
+      size: 5736
+    outs:
+    - path: processed/validation_report.json
+      hash: md5
+      md5: ed738b3c7a4d7f6a9e90de97570e82ba
+      size: 3322
+  features:
+    cmd: python features.py
+    deps:
+    - path: config.py
+      hash: md5
+      md5: 5c2a134c3b859aa1fa3ba1f130f012f5
+      size: 2571
+    - path: data.py
+      hash: md5
+      md5: 5ccf2382eca61bea27dcde89d8cf6a0d
+      size: 4891
+    - path: data/nfl_team_stats_2002-2025.csv
+      hash: md5
+      md5: 798902cd82a768d36e00baa9971c4856
+      size: 1280152
+    - path: features.py
+      hash: md5
+      md5: 47a02a197155ae2250620ff6bc2cc623
+      size: 11442
+    - path: processed/validation_report.json
+      hash: md5
+      md5: ed738b3c7a4d7f6a9e90de97570e82ba
+      size: 3322
+    outs:
+    - path: processed/features_games.parquet
+      hash: md5
+      md5: 6ec4a9f2f98731f2e69ccddf039e7684
+      size: 5823055
+    - path: processed/features_team_games.parquet
+      hash: md5
+      md5: f0068d2c90b017f9b0946c1092a72e5d
+      size: 10137063
+  train:
+    cmd: python train.py
+    deps:
+    - path: config.py
+      hash: md5
+      md5: 5c2a134c3b859aa1fa3ba1f130f012f5
+      size: 2571
+    - path: features.py
+      hash: md5
+      md5: 47a02a197155ae2250620ff6bc2cc623
+      size: 11442
+    - path: processed/features_games.parquet
+      hash: md5
+      md5: 6ec4a9f2f98731f2e69ccddf039e7684
+      size: 5823055
+    - path: train.py
+      hash: md5
+      md5: 7172d082ba2304bcc40b7cd271ee777d
+      size: 12271
+    outs:
+    - path: models/best_model.joblib
+      hash: md5
+      md5: 7363c033178df6d84449d79dd1e726a4
+      size: 5596639
+    - path: models/best_model_features.txt
+      hash: md5
+      md5: 640714f1566d04fef0857e0315ee4fef
+      size: 2593
+    - path: models/feature_importance.png
+      hash: md5
+      md5: 2dc68daf0a7592af0b088875ba88dca1
+      size: 68158
+    - path: models/metrics.json
+      hash: md5
+      md5: 997648d863e7d4e99da70aab17956667
+      size: 644
+    - path: models/model_selection_valid.csv
+      hash: md5
+      md5: f88bb0e4171d1f673d4cec809a6981be
+      size: 1346
+  backtest:
+    cmd: python backtest.py
+    deps:
+    - path: backtest.py
+      hash: md5
+      md5: 1142d366db8816722d548d07038bb3e9
+      size: 2261
+    - path: models/best_model.joblib
+      hash: md5
+      md5: 7363c033178df6d84449d79dd1e726a4
+      size: 5596639
+    outs:
+    - path: models/backtest_by_season.csv
+      hash: md5
+      md5: 1fa3b144971dc7ba1dc5147085495015
+      size: 3559
+  predict:
+    cmd: python predict.py
+    deps:
+    - path: data/upcoming_games.csv
+      hash: md5
+      md5: 31a590761d05791e45fead3efbf4ed64
+      size: 13336
+    - path: models/best_model.joblib
+      hash: md5
+      md5: 7363c033178df6d84449d79dd1e726a4
+      size: 5596639
+    - path: predict.py
+      hash: md5
+      md5: 581d7becd358a3861077e17c8a5f8c63
+      size: 4353
+    outs:
+    - path: models/predictions_upcoming.csv
+      hash: md5
+      md5: 50030317b5da6dc0c5ce4cb8403857d0
+      size: 42987
