@@ -15,7 +15,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from config import MODELS_PATH, CURRENT_SEASON
+from config import MODELS_PATH, CURRENT_SEASON, MLFLOW_TRACKING_URI, REGISTERED_MODEL
 from data import _normalize, load_upcoming
 from features import build_features
 from utils import get_logger
@@ -24,11 +24,21 @@ logger = get_logger("predict")
 
 
 def load_model():
+    """Champion model from the MLflow registry; falls back to models/best_model.joblib."""
+    with open(os.path.join(MODELS_PATH, "best_model_features.txt")) as f:
+        features = [line.strip() for line in f if line.strip()]
+    try:
+        import mlflow.sklearn
+        mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+        uri = f"models:/{REGISTERED_MODEL}@champion"
+        model = mlflow.sklearn.load_model(uri)
+        logger.info(f"Loaded {uri} from the MLflow registry")
+        return model, features
+    except Exception as e:
+        logger.warning(f"Registry load failed ({type(e).__name__}); using local joblib file")
     path = os.path.join(MODELS_PATH, "best_model.joblib")
     if not os.path.exists(path):
         raise FileNotFoundError(f"No model at {path}. Run train.py first.")
-    with open(os.path.join(MODELS_PATH, "best_model_features.txt")) as f:
-        features = [line.strip() for line in f if line.strip()]
     return joblib.load(path), features
 
 

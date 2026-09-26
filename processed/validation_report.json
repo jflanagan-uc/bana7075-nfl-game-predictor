@@ -1,0 +1,135 @@
+{
+  "data_csv": "nfl_team_stats_2002-2025.csv",
+  "data_sha256": "c036d0490ea9b131d18e2ff5761d744b9d5d65eb281e870444bb2e0b2bd2ccbf",
+  "n_checks": 18,
+  "n_failed_critical": 0,
+  "n_warnings": 0,
+  "checks": [
+    {
+      "check": "required_columns_present",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "no_missing_values_in_key_columns",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "no_duplicate_games",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "valid_week_labels",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "dates_parse",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "team_not_playing_itself",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "scores_non_negative",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "pass_comp_le_pass_att",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "third_down_comp_le_third_down_att",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "fourth_down_comp_le_fourth_down_att",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "redzone_comp_le_redzone_att",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "possession_is_mm_ss",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "exactly_32_teams",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": "found 32"
+    },
+    {
+      "check": "season_game_counts_plausible",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "warning",
+      "detail": "{2002: 267, 2003: 267, 2004: 267, 2005: 267, 2006: 267, 2007: 267, 2008: 267, 2009: 267, 2010: 267, 2011: 267, 2012: 267, 2013: 267, 2014: 267, 2015: 267, 2016: 267, 2017: 267, 2018: 267, 2019: 267, 2020: 269, 2021: 285, 2022: 284, 2023: 285, 2024: 285, 2025: 285}"
+    },
+    {
+      "check": "upcoming_required_columns",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "upcoming_dates_parse",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "upcoming_no_duplicates",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "check": "upcoming_team_names_known",
+      "passed": true,
+      "failed_rows": 0,
+      "severity": "critical",
+      "detail": "[]"
+    }
+  ]
+}

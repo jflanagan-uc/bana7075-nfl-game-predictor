@@ -25,10 +25,18 @@ from sklearn.metrics import accuracy_score, brier_score_loss, log_loss, roc_auc_
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
+import mlflow
+import mlflow.sklearn
+from mlflow.models import infer_signature
+from mlflow.tracking import MlflowClient
+
 from config import (MODELS_PATH, SEED, TRAIN_SEASONS_START, TRAIN_SEASONS_END,
-                    VALID_SEASONS_START, VALID_SEASONS_END, TEST_SEASONS_START, TEST_SEASONS_END)
+                    VALID_SEASONS_START, VALID_SEASONS_END, TEST_SEASONS_START, TEST_SEASONS_END,
+                    MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT, REGISTERED_MODEL,
+                    PROCESSED_DATA_PATH)
 from features import build_features, model_feature_columns
 from utils import get_logger
+from validate import run_validation
 
 try:
     from xgboost import XGBClassifier
@@ -77,6 +85,44 @@ def metrics(y, p):
     }
 
 
+def model_params(est):
+    """Hyperparameters worth logging (scalars only), for any candidate type."""
+    inner = est.steps[-1][1] if hasattr(est, "steps") else est
+    return {k: v for k, v in inner.get_params().items()
+            if isinstance(v, (int, float, str, bool)) or v is None}
+
+
+def register_and_promote(model_info, report, data_sha):
+    """Document the new registry version, then point the 'champion' alias at it
+    if it beats the current champion's test log loss."""
+    client = MlflowClient()
+    version = model_info.registered_model_version
+    t = report["test_model"]
+    client.update_model_version(
+        REGISTERED_MODEL, version,
+        description=(f"{report['selected_model']} ({report['n_features']} features). "
+                     f"Selected on valid {VALID_SEASONS_START}-{VALID_SEASONS_END} by log loss; "
+                     f"test {report['test_seasons']}: acc={t['accuracy']:.3f}, logloss={t['logloss']:.4f}, "
+                     f"AUC={t['auc']:.3f}. Production refit on all seasons "
+                     f"{TRAIN_SEASONS_START}-{TEST_SEASONS_END}. Data sha256 {data_sha[:12]}."))
+    for k, v in {"selected_model": report["selected_model"], "test_logloss": f"{t['logloss']:.5f}",
+                 "test_accuracy": f"{t['accuracy']:.4f}", "data_sha256": data_sha}.items():
+        client.set_model_version_tag(REGISTERED_MODEL, version, k, v)
+
+    try:
+        champ = client.get_model_version_by_alias(REGISTERED_MODEL, "champion")
+        champ_ll = float(champ.tags.get("test_logloss", "inf"))
+    except Exception:  # no champion yet
+        champ, champ_ll = None, float("inf")
+    if t["logloss"] <= champ_ll:
+        client.set_registered_model_alias(REGISTERED_MODEL, "champion", version)
+        logger.info(f"Registered {REGISTERED_MODEL} v{version} → alias 'champion'")
+    else:
+        client.set_registered_model_alias(REGISTERED_MODEL, "challenger", version)
+        logger.info(f"Registered {REGISTERED_MODEL} v{version} → 'challenger' "
+                    f"(champion v{champ.version} still better: {champ_ll:.4f})")
+
+
 def load_matrix():
     _, m = build_features(TRAIN_SEASONS_START, TEST_SEASONS_END, include_future=False)
     m = m[m["completed"] & m["home_win"].isin([0.0, 1.0])].copy()  # ties dropped from training/eval
@@ -112,6 +158,18 @@ def save_importance(model, X, y, cols, outdir):
 
 def main():
     Path(MODELS_PATH).mkdir(parents=True, exist_ok=True)
+    validation = run_validation()          # stops here if the raw data fails a critical check
+    data_sha = validation["data_sha256"]
+
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    mlflow.set_experiment(MLFLOW_EXPERIMENT)
+    with mlflow.start_run(run_name="train_select_register") as parent:
+        _train(data_sha, parent)
+
+
+def _train(data_sha, parent):
+    mlflow.log_artifact(os.path.join(PROCESSED_DATA_PATH, "validation_report.json"),
+                        artifact_path="data")
     m = load_matrix()
     cols = model_feature_columns(m)
 
@@ -119,6 +177,14 @@ def main():
     valid = split(m, VALID_SEASONS_START, VALID_SEASONS_END)
     test = split(m, TEST_SEASONS_START, TEST_SEASONS_END)
     logger.info(f"{len(cols)} features | train {len(train)} | valid {len(valid)} | test {len(test)} games")
+    mlflow.set_tags({"stage": "model_selection", "data_sha256": data_sha})
+    mlflow.log_params({
+        "data_version": data_sha[:12], "n_features": len(cols),
+        "train_seasons": f"{TRAIN_SEASONS_START}-{TRAIN_SEASONS_END}",
+        "valid_seasons": f"{VALID_SEASONS_START}-{VALID_SEASONS_END}",
+        "test_seasons": f"{TEST_SEASONS_START}-{TEST_SEASONS_END}",
+        "n_train": len(train), "n_valid": len(valid), "n_test": len(test), "seed": SEED,
+    })
 
     Xtr, ytr = xy(train, cols)
     Xva, yva = xy(valid, cols)
@@ -127,8 +193,12 @@ def main():
     rows = []
     best = (np.inf, None, None)
     for name, est in candidate_models():
-        fitted = finalize(clone(est)).fit(Xtr, ytr)
-        res = metrics(yva, fitted.predict_proba(Xva)[:, 1])
+        with mlflow.start_run(run_name=name, nested=True):
+            fitted = finalize(clone(est)).fit(Xtr, ytr)
+            res = metrics(yva, fitted.predict_proba(Xva)[:, 1])
+            mlflow.set_tags({"candidate": name, "family": name.split("_")[0], "data_sha256": data_sha})
+            mlflow.log_params(model_params(est))
+            mlflow.log_metrics({f"valid_{k}": v for k, v in res.items() if k != "games"})
         rows.append({"model": name, **res})
         logger.info(f"  {name:28s} valid logloss={res['logloss']:.4f} acc={res['accuracy']:.3f}")
         if res["logloss"] < best[0]:
@@ -142,6 +212,8 @@ def main():
 
     _, best_name, best_est = best
     logger.info(f"Selected: {best_name}")
+    mlflow.log_param("selected_model", best_name)
+    mlflow.log_params({f"best__{k}": v for k, v in model_params(best_est).items()})
 
     # ---- Honest test: refit on train+valid, score the untouched test seasons ----
     trval = pd.concat([train, valid])
@@ -177,6 +249,20 @@ def main():
         f.write("\n".join(cols) + "\n")
     with open(os.path.join(MODELS_PATH, "metrics.json"), "w") as f:
         json.dump(report, f, indent=2)
+
+    # ---- MLflow: metrics, artifacts, and a versioned entry in the model registry ----
+    for k in ("test_model", "test_baseline_elo_only", "test_baseline_home_rate"):
+        mlflow.log_metrics({f"{k}_{mk}": mv for mk, mv in report[k].items() if mk != "games"})
+    for fname in ("metrics.json", "model_selection_valid.csv", "test_predictions.csv",
+                  "feature_importance.csv", "feature_importance.png", "best_model_features.txt"):
+        mlflow.log_artifact(os.path.join(MODELS_PATH, fname), artifact_path="reports")
+
+    model_info = mlflow.sklearn.log_model(
+        final, name="model", registered_model_name=REGISTERED_MODEL,
+        signature=infer_signature(Xall.head(50), final.predict_proba(Xall.head(50))[:, 1]),
+        input_example=Xall.head(3),
+        serialization_format="cloudpickle")  # our own trained model, same trust level as joblib
+    register_and_promote(model_info, report, data_sha)
 
     logger.info(f"Saved production model (trained on {len(m)} games, "
                 f"{int(m['season'].min())}-{int(m['season'].max())}) → {MODELS_PATH}")
