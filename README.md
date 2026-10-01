@@ -42,6 +42,66 @@ Python 3.10+ is recommended.
 
 The main dependencies are pandas, NumPy, scikit-learn, MLflow, DVC, Streamlit, PyArrow, matplotlib, joblib, and XGBoost. Install the exact project dependencies from `requirements.txt`.
 
+## New to Git and GitHub? Install Git first
+
+Git is the command-line tool used to clone the repository, create branches, track changes, commit work, and push changes to GitHub. If you are brand new to GitHub, install Git before continuing with the project setup below.
+
+### Windows
+
+1. Download **Git for Windows** from https://git-scm.com/download/win.
+2. Run the installer. The default options are appropriate for this project.
+3. Open **Git Bash**, PowerShell, or Command Prompt after installation.
+4. Verify the installation:
+
+```bash
+git --version
+```
+
+You should see a Git version number.
+
+### macOS
+
+First check whether Git is already installed:
+
+```bash
+git --version
+```
+
+If macOS prompts you to install the **Command Line Developer Tools**, follow the prompt. This installs Git.
+
+Alternatively, if you use Homebrew:
+
+```bash
+brew install git
+```
+
+Then verify:
+
+```bash
+git --version
+```
+
+### Configure Git for the first time
+
+After installing Git, set the name and email that will be associated with your commits:
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "your-email@example.com"
+```
+
+For GitHub, it is usually easiest to use the same email associated with your GitHub account (or your GitHub-provided no-reply email if you prefer to keep your email private).
+
+You can confirm the configuration with:
+
+```bash
+git config --global --list
+```
+
+### Create a GitHub account
+
+If you do not already have one, create an account at https://github.com. Once Git is installed and your GitHub account is ready, continue with the repository setup below.
+
 ## Setup
 
 ### 1. Clone the repository
