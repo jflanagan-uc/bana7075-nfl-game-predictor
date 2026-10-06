@@ -57,3 +57,6 @@ SEED = int(os.getenv("SEED", "42"))
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "sqlite:///" + os.path.join(BASE_DIR, "mlflow.db"))
 MLFLOW_EXPERIMENT   = os.getenv("MLFLOW_EXPERIMENT", "nfl-game-predictor")
 REGISTERED_MODEL    = os.getenv("REGISTERED_MODEL", "nfl-game-winner")
+
+CV_START = int(os.getenv("CV_START", "2008"))  # first season predicted in tuning folds
+# folds run CV_START .. VALID_SEASONS_END (2022); test seasons stay untouched

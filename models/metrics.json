@@ -1,13 +1,42 @@
 {
-  "selected_model": "rf_d4",
+  "selected_model": "logreg_C0.003",
   "n_features": 119,
+  "selection": "walk_forward_cv",
+  "cv_seasons": "2008-2022",
+  "cv_selected": {
+    "logloss": 0.6282384357429834,
+    "brier": 0.21929485743021357,
+    "auc": 0.6923896240859583,
+    "accuracy": 0.6401092082402581,
+    "logloss_std": 0.01760666358265656,
+    "games": 4029,
+    "folds": 15
+  },
+  "cv_baseline_elo_only": {
+    "logloss": 0.6281925260537936,
+    "brier": 0.21934317109045195,
+    "auc": 0.6915546989114205,
+    "accuracy": 0.6497890295358649,
+    "logloss_std": 0.016739760109464496,
+    "games": 4029,
+    "folds": 15
+  },
+  "cv_baseline_home_rate": {
+    "logloss": 0.6859710620011871,
+    "brier": 0.24641908558183384,
+    "auc": 0.5,
+    "accuracy": 0.5606850335070737,
+    "logloss_std": 0.008121057875660647,
+    "games": 4029,
+    "folds": 15
+  },
   "test_seasons": "2023-2025",
   "test_model": {
     "games": 854,
-    "logloss": 0.6304696248770376,
-    "brier": 0.2201205456853648,
-    "auc": 0.6951956359205825,
-    "accuracy": 0.6533957845433255
+    "logloss": 0.6283405966366852,
+    "brier": 0.21957813084141534,
+    "auc": 0.6969900035998118,
+    "accuracy": 0.639344262295082
   },
   "test_baseline_elo_only": {
     "games": 854,
